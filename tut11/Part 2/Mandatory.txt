@@ -1,0 +1,10 @@
+
+Mandatory Requirement
+
+1) Missing Values for midsem/endsem (non numeric or blank) to be listed roll number wise on the terminal.
+
+2) use of logging library in python (standard code) for the code.
+
+3) Use of try catch.
+
+4) Lab 10, 11 you need to make a web based simple portal also.
