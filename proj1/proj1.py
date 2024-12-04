@@ -242,5 +242,62 @@ for index, row in expanded_op_1_sorted.iterrows():
 expanded_op_1
 expanded_op_1_sorted
 
+
+
+
+
+# Second Part -> generating attendance sheets for each course by day and shift wise
+import openpyxl
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.styles import Alignment, Border, Side
+
+for _, rows in expanded_op_1.iterrows():
+    date = rows["Date"]
+    shift = rows["Shift"]
+    courses = rows["Course"]
+    rooms = rows["room_no"]
+    studnts = rows["log"]
+    studnts = studnts.split(', ')
+    studnts = [student.strip() for student in studnts]
+
+    # Create attendance DataFrame
+    attendance_sheet = pd.DataFrame()
+    attendance_sheet["Stud_Roll"] = studnts
+    attendance_sheet["Stud_Name"] = attendance_sheet["Stud_Roll"].map(ip_4.set_index("Roll")["Name"])
+    attendance_sheet["Sign"] = ""
+
+    # Adding blank dataframe for signature
+    empty_df = pd.DataFrame({"Stud_Roll": [""] * 5, "Stud_Name": [""] * 5, "Sign": [""] * 5})
+    attendance_sheet = pd.concat([attendance_sheet, empty_df], ignore_index=True)
+
+    # Excel file name
+    sanitized_date = date.replace("/", "-")  # Replace / with -
+    file_name = f"{sanitized_date}_{shift}_{courses}_Room_{rooms}.xlsx"
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    # title for worksheet
+    ws.title = f"{courses} Room {rooms}"
+
+    # Append attendance data to the worksheet
+    for r in dataframe_to_rows(attendance_sheet, index=False, header=True):
+        ws.append(r)
+
+    # Adjust column width based on name length
+    max_name_length = max(attendance_sheet["Stud_Name"].str.len())
+    ws.column_dimensions["B"].width = max(15, max_name_length + 2)
+
+    for row in ws.iter_rows():
+        for box in row:
+            box.alignment = Alignment(horizontal="center", vertical="center")
+            box.border = Border(left=Side(style="thin"),
+                                 right=Side(style="thin"),
+                                 top=Side(style="thin"),
+                                 bottom=Side(style="thin"))
+    wb.save(file_name)
+print("Attendance sheets are generated successfully.")
+
+
+
 end_time = datetime.now()
 print('Duration of Program Execution: {}'.format(end_time - start_time))
